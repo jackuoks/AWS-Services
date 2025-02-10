@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create an S3 bucket configured to host a static website with retain on delete policy.
+
+Resources:
+  S3WebsiteBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties: 
+      BucketName: !Sub '${AWS::StackName}-website-bucket'
+      WebsiteConfiguration: 
+        IndexDocument: index.html
+        ErrorDocument: error.html
+    DeletionPolicy: Retain
+
+  BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties: 
+      Bucket: !Ref S3WebsiteBucket
+      PolicyDocument: 
+        Version: '2012-10-17'
+        Statement: 
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: '*'
+            Action: 
+              - 's3:GetObject'
+            Resource: !Sub 'arn:aws:s3:::${S3WebsiteBucket}/*'
+
+Outputs:
+  WebsiteURL:
+    Description: URL for website hosted on S3
+    Value: !GetAtt 'S3WebsiteBucket.WebsiteURL'
